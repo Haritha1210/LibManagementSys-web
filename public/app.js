@@ -443,11 +443,15 @@ function setupEvents() {
   $("#loan-form").addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!requireStaff()) return;
-    await request("/api/loans/issue", { method: "POST", body: JSON.stringify(formData(event.currentTarget)) });
-    event.currentTarget.reset();
-    setDefaultDates();
-    showAlert("Book issued successfully.");
-    await loadAll();
+    try {
+      await request("/api/loans/issue", { method: "POST", body: JSON.stringify(formData(event.currentTarget)) });
+      event.currentTarget.reset();
+      setDefaultDates();
+      showAlert("Book issued successfully.");
+      await loadAll();
+    } catch (error) {
+      showAlert(error.message, true);
+    }
   });
 
   document.querySelectorAll(".cancel-edit").forEach((btn) => {
