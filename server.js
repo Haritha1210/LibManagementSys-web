@@ -233,9 +233,13 @@ app.get("/api/dashboard", asyncRoute(async (req, res) => {
 
 app.get("/api/debug", (req, res) => {
   const info = getStorageInfo();
+  const redisKeys = Object.keys(process.env).filter(k =>
+    k.toLowerCase().includes("redis") || k.toLowerCase().includes("kv") || k.toLowerCase().includes("upstash")
+  );
   res.json({
     storage: info,
     vercel: !!process.env.VERCEL,
+    redisEnvVarsFound: redisKeys,
     detectedEnv: info.type === "redis" ? info.envVar : null
   });
 });
