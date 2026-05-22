@@ -440,23 +440,17 @@ function setupEvents() {
     await saveRecord("borrowers", event.currentTarget, (data) => ({ ...data, maxBooks: Number(data.maxBooks) }));
   });
 
-  console.log("Adding loan form submit handler...");
-  const loanForm = $("#loan-form");
-  console.log("Loan form found:", !!loanForm);
-  loanForm?.addEventListener("submit", async (event) => {
-    console.log("Loan form submitted");
+  $("#loan-form").addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!requireStaff()) return;
+    const form = event.currentTarget;
     try {
-      const payload = formData(event.currentTarget);
-      console.log("Loan payload:", payload);
-      await request("/api/loans/issue", { method: "POST", body: JSON.stringify(payload) });
-      event.currentTarget.reset();
+      await request("/api/loans/issue", { method: "POST", body: JSON.stringify(formData(form)) });
+      form.reset();
       setDefaultDates();
       showAlert("Book issued successfully.");
       await loadAll();
     } catch (error) {
-      console.error("Loan issue error:", error);
       showAlert(error.message, true);
     }
   });
