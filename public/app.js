@@ -42,7 +42,7 @@ function storageRemove(key) {
 
 const storedTheme = storageGet("library-theme") || "light";
 const adminPassword = "library123";
-let isLoggedIn = storageGet("library-logged-in") === "true";
+let isLoggedIn = false;
 
 function applyTheme(theme) {
   const nextTheme = theme === "dark" ? "dark" : "light";
@@ -395,7 +395,6 @@ function setupEvents() {
       return;
     }
     isLoggedIn = true;
-    storageSet("library-logged-in", "true");
     updateAuthUi();
     $("#login-dialog").close();
     showAlert("Admin logged in.");
@@ -403,7 +402,6 @@ function setupEvents() {
 
   $("#logout-button").addEventListener("click", () => {
     isLoggedIn = false;
-    storageRemove("library-logged-in");
     updateAuthUi();
     showAlert("Logged out.");
   });
