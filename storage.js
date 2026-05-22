@@ -26,23 +26,24 @@ const defaultDb = {
   ]
 };
 
-let kv = null;
-if (process.env.KV_URL) {
+const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
+const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+let redisClient = null;
+if (redisUrl && redisToken) {
   try {
-    const { kv: vercelKv } = require("@vercel/kv");
-    kv = vercelKv;
+    const { Redis } = require("@upstash/redis");
+    redisClient = new Redis({ url: redisUrl, token: redisToken });
   } catch {
-    console.warn("@vercel/kv not available, falling back to file storage");
+    console.warn("@upstash/redis not available, falling back to file storage");
   }
 }
 
-const isVercelKv = () => kv !== null;
-
 async function readDb() {
-  if (isVercelKv()) {
-    const data = await kv.get("db");
+  if (redisClient) {
+    const data = await redisClient.get("db");
     if (data) return data;
-    await kv.set("db", defaultDb);
+    await redisClient.set("db", defaultDb);
     return defaultDb;
   }
   await fs.mkdir(DATA_DIR, { recursive: true });
@@ -55,8 +56,8 @@ async function readDb() {
 }
 
 async function writeDb(db) {
-  if (isVercelKv()) {
-    await kv.set("db", db);
+  if (redisClient) {
+    await redisClient.set("db", db);
     return;
   }
   await fs.mkdir(DATA_DIR, { recursive: true });
