@@ -3,18 +3,17 @@ const path = require("path");
 const os = require("os");
 
 function findRedisEnv() {
-  const patterns = [
-    ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"],
-    ["KV_REST_API_URL", "KV_REST_API_TOKEN"],
-    ["KV_URL", null],
-    ["REDIS_URL", null]
-  ];
-  for (const [urlKey, tokenKey] of patterns) {
-    const url = process.env[urlKey];
-    if (url) {
-      const token = tokenKey ? process.env[tokenKey] : "";
-      return { url, token, urlKey };
-    }
+  const urlSuffixes = ["KV_URL", "REDIS_URL", "KV_REST_API_URL", "UPSTASH_REDIS_REST_URL"];
+  for (const key of Object.keys(process.env)) {
+    const upper = key.toUpperCase();
+    const match = urlSuffixes.find(s => upper === s || upper.endsWith("_" + s));
+    if (!match) continue;
+    const url = process.env[key];
+    const base = upper.endsWith("_" + match) ? upper.slice(0, -match.length - 1) : "";
+    const tokenKey = base ? `${base}_KV_REST_API_TOKEN` : "KV_REST_API_TOKEN";
+    const tokenKey2 = base ? `${base}_UPSTASH_REDIS_REST_TOKEN` : "UPSTASH_REDIS_REST_TOKEN";
+    const token = process.env[tokenKey] || process.env[tokenKey2] || "";
+    return { url, token, urlKey: key };
   }
   return null;
 }
