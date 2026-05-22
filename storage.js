@@ -26,14 +26,11 @@ const defaultDb = {
   ]
 };
 
-const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
-const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
-
 let redisClient = null;
-if (redisUrl && redisToken) {
+if (process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL || process.env.KV_URL) {
   try {
     const { Redis } = require("@upstash/redis");
-    redisClient = new Redis({ url: redisUrl, token: redisToken });
+    redisClient = Redis.fromEnv();
   } catch {
     console.warn("@upstash/redis not available, falling back to file storage");
   }
