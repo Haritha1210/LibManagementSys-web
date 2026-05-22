@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Library Management System</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="topbar">
+        <div class="brand-mark" aria-label="Library Management System">
+          <span class="brand-icon" aria-hidden="true">L</span>
+          <span>WiseLibrary</span>
+        </div>
+        <nav class="tabs" aria-label="Primary">
+          <button class="tab is-active" data-section="dashboard">Dashboard</button>
+          <button class="tab" data-section="books">Books</button>
+          <button class="tab" data-section="authors">Authors</button>
+          <button class="tab" data-section="borrowers">Borrowers</button>
+          <button class="tab" data-section="loans">Borrow / Return</button>
+        </nav>
+        <div class="topbar-actions">
+          <span id="session-status" class="session-status">Guest</span>
+          <button class="login-link" id="login-button" type="button">Login</button>
+          <button class="login-link is-hidden" id="logout-button" type="button">Logout</button>
+          <button class="theme-toggle logo-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch theme">
+            <span class="theme-icon" aria-hidden="true"></span>
+          </button>
+        </div>
+      </div>
+      <div class="hero-banner">
+        <img src="assets/library-hero.png" alt="Library bookshelves">
+        <div class="hero-overlay">
+          <p class="eyebrow">Digital Library Portal</p>
+          <h1>Library Management System</h1>
+          <p id="staff-note">Login to manage library records.</p>
+        </div>
+      </div>
+    </header>
+
+    <dialog id="login-dialog" class="login-dialog">
+      <form id="login-form" method="dialog">
+        <div class="section-title compact">
+          <div>
+            <p class="eyebrow dark-text" id="login-eyebrow">Staff Access</p>
+            <h2 id="login-title">Login</h2>
+          </div>
+          <button class="secondary" id="close-login" type="button">Close</button>
+        </div>
+        <label>Password
+          <input required name="password" type="password" autocomplete="current-password" placeholder="Enter admin password">
+        </label>
+        <button type="submit" id="login-submit">Login</button>
+      </form>
+    </dialog>
+
+    <main>
+      <p id="alert" class="alert" role="status" aria-live="polite"></p>
+
+      <section id="dashboard" class="section is-active" aria-labelledby="dashboard-title">
+        <div class="section-title">
+          <h2 id="dashboard-title">Dashboard</h2>
+          <button class="secondary" id="refresh-dashboard">Refresh</button>
+        </div>
+        <div class="metrics" id="metrics"></div>
+        <div class="panel">
+          <div class="section-title compact">
+            <h3>Recent borrowing activity</h3>
+            <button class="secondary staff-only" data-export="loans">Export CSV</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Book</th>
+                  <th>Borrower</th>
+                  <th>Issued</th>
+                  <th>Due</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="recent-loans"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="books" class="section" aria-labelledby="books-title">
+        <div class="section-title">
+          <h2 id="books-title">Books</h2>
+          <button class="secondary staff-only" data-export="books">Export CSV</button>
+        </div>
+        <form id="book-form" class="form-grid staff-only">
+          <input type="hidden" name="id">
+          <label>Title <input required name="title" autocomplete="off"></label>
+          <label>Author <select required name="authorId"></select></label>
+          <label>Genre <input required name="genre" autocomplete="off"></label>
+          <label>ISBN <input required name="isbn" autocomplete="off"></label>
+          <label>Published Year <input name="publishedYear" type="number" min="1000" max="2100"></label>
+          <label>Total Copies <input required name="totalCopies" type="number" min="1" value="1"></label>
+          <div class="form-actions">
+            <button type="submit">Save Book</button>
+            <button class="secondary" type="reset">Clear</button>
+            <button class="secondary cancel-edit is-hidden" type="button">Cancel Edit</button>
+          </div>
+        </form>
+        <div class="toolbar">
+          <input id="book-search" placeholder="Search by title, author, genre, or ISBN">
+          <select id="book-filter">
+            <option value="">All genres</option>
+          </select>
+          <select id="book-sort">
+            <option value="title">Sort by title</option>
+            <option value="authorName">Sort by author</option>
+            <option value="genre">Sort by genre</option>
+            <option value="availableCopies">Sort by availability</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Genre</th>
+                <th>ISBN</th>
+                <th>Copies</th>
+                <th class="staff-only">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="book-table"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="authors" class="section" aria-labelledby="authors-title">
+        <div class="section-title">
+          <h2 id="authors-title">Authors</h2>
+          <button class="secondary staff-only" data-export="authors">Export CSV</button>
+        </div>
+        <form id="author-form" class="form-grid staff-only">
+          <input type="hidden" name="id">
+          <label>Name <input required name="name" autocomplete="off"></label>
+          <label>Country <input required name="country" autocomplete="off"></label>
+          <label class="wide">Bio <textarea name="bio" rows="3"></textarea></label>
+          <div class="form-actions">
+            <button type="submit">Save Author</button>
+            <button class="secondary" type="reset">Clear</button>
+            <button class="secondary cancel-edit is-hidden" type="button">Cancel Edit</button>
+          </div>
+        </form>
+        <div class="toolbar">
+          <input id="author-search" placeholder="Search by author, country, or bio">
+          <select id="author-sort">
+            <option value="name">Sort by name</option>
+            <option value="country">Sort by country</option>
+            <option value="bookCount">Sort by book count</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Country</th>
+                <th>Books</th>
+                <th>Bio</th>
+                <th class="staff-only">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="author-table"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="borrowers" class="section" aria-labelledby="borrowers-title">
+        <div class="section-title">
+          <h2 id="borrowers-title">Borrowers</h2>
+          <button class="secondary staff-only" data-export="borrowers">Export CSV</button>
+        </div>
+        <form id="borrower-form" class="form-grid staff-only">
+          <input type="hidden" name="id">
+          <label>Name <input required name="name" autocomplete="off"></label>
+          <label>Email <input required name="email" type="email"></label>
+          <label>Phone <input required name="phone" autocomplete="off"></label>
+          <label>Membership Date <input name="membershipDate" type="date"></label>
+          <label>Max Books <input name="maxBooks" type="number" min="1" value="3"></label>
+          <div class="form-actions">
+            <button type="submit">Save Borrower</button>
+            <button class="secondary" type="reset">Clear</button>
+            <button class="secondary cancel-edit is-hidden" type="button">Cancel Edit</button>
+          </div>
+        </form>
+        <div class="toolbar">
+          <input id="borrower-search" placeholder="Search by name, email, or phone">
+          <select id="borrower-filter">
+            <option value="">All borrowers</option>
+            <option value="active">Currently borrowing</option>
+            <option value="overdue">Has overdue books</option>
+            <option value="limit">At borrow limit</option>
+          </select>
+          <select id="borrower-sort">
+            <option value="name">Sort by name</option>
+            <option value="borrowedCount">Sort by borrowed count</option>
+            <option value="overdueCount">Sort by overdue count</option>
+            <option value="membershipDate">Sort by membership date</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Contact</th>
+                <th>Membership</th>
+                <th>Borrowed</th>
+                <th>History</th>
+                <th class="staff-only">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="borrower-table"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="loans" class="section" aria-labelledby="loans-title">
+        <div class="section-title">
+          <h2 id="loans-title">Borrow / Return</h2>
+          <button class="secondary staff-only" data-export="loans">Export CSV</button>
+        </div>
+        <form id="loan-form" class="form-grid staff-only">
+          <label>Book <select required name="bookId"></select></label>
+          <label>Borrower <select required name="borrowerId"></select></label>
+          <label>Issue Date <input required name="issueDate" type="date"></label>
+          <label>Due Date <input required name="dueDate" type="date"></label>
+          <label>Loan Period <input id="loan-days" type="number" min="1" max="60" value="14"></label>
+          <div class="form-actions">
+            <button type="submit">Issue Book</button>
+          </div>
+        </form>
+        <div class="mini-metrics" id="loan-summary"></div>
+        <div class="toolbar">
+          <input id="loan-search" placeholder="Search loans by book or borrower">
+          <select id="loan-filter">
+            <option value="">All loans</option>
+            <option value="issued">Issued</option>
+            <option value="returned">Returned</option>
+            <option value="overdue">Overdue</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Book</th>
+                <th>Borrower</th>
+                <th>Issued</th>
+                <th>Due / Returned</th>
+                <th>Status</th>
+                <th class="staff-only">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="loan-table"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="app.js?v=features3"></script>
+  </body>
+</html>

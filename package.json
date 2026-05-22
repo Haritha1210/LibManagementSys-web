@@ -1,0 +1,21 @@
+{
+  "name": "library-management-system",
+  "version": "1.0.0",
+  "description": "Full-stack library management system with books, authors, borrowers, issue tracking, dashboard, search, sorting, and CSV export.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "library",
+    "management",
+    "node",
+    "rest-api"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
