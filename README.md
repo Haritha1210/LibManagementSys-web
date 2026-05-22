@@ -129,18 +129,31 @@ The data is stored in `data/db.json`.
 
 ## Deployment
 
-Frontend and backend are served by the same Node server, so deploy this project as a Node app on Render, Railway, Heroku, or a similar platform.
+### Render (persistent server)
 
-Use this start command:
+Deploy as a Node.js web service with start command `node server.js`. Data persists via the filesystem.
+
+Live at: [https://libmanagementsys-web.onrender.com](https://libmanagementsys-web.onrender.com)
+
+### Vercel (serverless)
+
+This project uses [Vercel KV (Upstash Redis)](https://vercel.com/docs/storage/vercel-kv) for data persistence on Vercel.
+
+**Setup:**
+
+1. Push this repo to GitHub
+2. Import the repo into Vercel
+3. In Vercel Dashboard → Storage → Create a KV database (Upstash Redis)
+4. Link the KV database to your project (this auto-adds `KV_URL` env var)
+5. Deploy — the app will automatically use KV for storage
+
+The app falls back to file-based storage (`data/db.json`) when running locally.
+
+### Start command
 
 ```bash
 node server.js
 ```
-
-## Live Deployments
-
-- **Render**: [https://libmanagementsys-web.onrender.com](https://libmanagementsys-web.onrender.com)
-- **Vercel**: *(add Vercel URL after deployment)*
 
 ## Project Structure
 
