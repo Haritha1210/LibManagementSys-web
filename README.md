@@ -137,10 +137,10 @@ Use this start command:
 node server.js
 ```
 
-After deployment, add the live frontend/backend URL here:
+## Live Deployments
 
-- Frontend: Not deployed yet
-- Backend: Not deployed yet
+- **Render**: [https://libmanagementsys-web.onrender.com](https://libmanagementsys-web.onrender.com)
+- **Vercel**: *(add Vercel URL after deployment)*
 
 ## Project Structure
 
