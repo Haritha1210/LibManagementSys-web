@@ -1,7 +1,7 @@
 const express = require("express");
 const path = require("path");
 const { randomUUID } = require("crypto");
-const { readDb, writeDb } = require("./storage");
+const { readDb, writeDb, getStorageInfo } = require("./storage");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -230,6 +230,15 @@ app.get("/api/dashboard", asyncRoute(async (req, res) => {
     borrowers: db.borrowers.length
   });
 }));
+
+app.get("/api/debug", (req, res) => {
+  const info = getStorageInfo();
+  res.json({
+    storage: info,
+    vercel: !!process.env.VERCEL,
+    detectedEnv: info.type === "redis" ? info.envVar : null
+  });
+});
 
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found." });

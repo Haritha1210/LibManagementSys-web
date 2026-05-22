@@ -2,8 +2,56 @@ const fs = require("fs/promises");
 const path = require("path");
 const os = require("os");
 
-const DATA_DIR = process.env.KV_URL ? null : path.join(process.env.VERCEL ? os.tmpdir() : __dirname, "data");
+function findRedisEnv() {
+  const patterns = [
+    ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"],
+    ["KV_REST_API_URL", "KV_REST_API_TOKEN"],
+    ["KV_URL", null],
+    ["REDIS_URL", null]
+  ];
+  for (const [urlKey, tokenKey] of patterns) {
+    const url = process.env[urlKey];
+    if (url) {
+      const token = tokenKey ? process.env[tokenKey] : "";
+      return { url, token, urlKey };
+    }
+  }
+  return null;
+}
+
+const redisEnv = findRedisEnv();
+
+let redisClient = null;
+if (redisEnv) {
+  try {
+    const { Redis } = require("@upstash/redis");
+    if (redisEnv.token) {
+      redisClient = new Redis({ url: redisEnv.url, token: redisEnv.token });
+    } else {
+      redisClient = new Redis({ url: redisEnv.url });
+    }
+    console.log(`Storage: connected to Redis via ${redisEnv.urlKey}`);
+  } catch (e) {
+    console.warn(`Storage: Redis via @upstash/redis failed: ${e.message}`);
+    try {
+      const { createClient } = require("@vercel/kv");
+      const opts = { url: redisEnv.url };
+      if (redisEnv.token) opts.token = redisEnv.token;
+      redisClient = createClient(opts);
+      console.log(`Storage: connected to Redis via @vercel/kv (${redisEnv.urlKey})`);
+    } catch (e2) {
+      console.warn(`Storage: Redis via @vercel/kv also failed: ${e2.message}`);
+    }
+  }
+}
+
+const isTempStorage = !redisClient && process.env.VERCEL;
+const DATA_DIR = redisClient ? null : path.join(isTempStorage ? os.tmpdir() : __dirname, "data");
 const DB_FILE = DATA_DIR ? path.join(DATA_DIR, "db.json") : null;
+
+if (isTempStorage && !redisClient) {
+  console.warn("Storage: WARNING - No Redis, using /tmp (data will reset on cold starts)");
+}
 
 const defaultDb = {
   authors: [
@@ -25,16 +73,6 @@ const defaultDb = {
     { id: "loan-hp1", bookId: "book-hp1", borrowerId: "borrower-meera", issueDate: "2026-05-07", dueDate: "2026-05-21", returnDate: null, status: "issued" }
   ]
 };
-
-let redisClient = null;
-if (process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL || process.env.KV_URL) {
-  try {
-    const { Redis } = require("@upstash/redis");
-    redisClient = Redis.fromEnv();
-  } catch {
-    console.warn("@upstash/redis not available, falling back to file storage");
-  }
-}
 
 async function readDb() {
   if (redisClient) {
@@ -61,4 +99,10 @@ async function writeDb(db) {
   await fs.writeFile(DB_FILE, JSON.stringify(db, null, 2));
 }
 
-module.exports = { readDb, writeDb };
+function getStorageInfo() {
+  if (redisClient) return { type: "redis", envVar: redisEnv?.urlKey };
+  if (isTempStorage) return { type: "temp_file", path: DB_FILE };
+  return { type: "local_file", path: DB_FILE };
+}
+
+module.exports = { readDb, writeDb, getStorageInfo };
