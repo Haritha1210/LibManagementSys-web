@@ -1,8 +1,9 @@
 const fs = require("fs/promises");
 const path = require("path");
+const os = require("os");
 
-const DATA_DIR = path.join(__dirname, "data");
-const DB_FILE = path.join(DATA_DIR, "db.json");
+const DATA_DIR = process.env.KV_URL ? null : path.join(process.env.VERCEL ? os.tmpdir() : __dirname, "data");
+const DB_FILE = DATA_DIR ? path.join(DATA_DIR, "db.json") : null;
 
 const defaultDb = {
   authors: [
@@ -26,7 +27,7 @@ const defaultDb = {
 };
 
 let kv = null;
-if (process.env.KV_URL || process.env.VERCEL) {
+if (process.env.KV_URL) {
   try {
     const { kv: vercelKv } = require("@vercel/kv");
     kv = vercelKv;
